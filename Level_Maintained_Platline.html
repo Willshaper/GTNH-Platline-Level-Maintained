@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Platline Level Maintained</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f1117;
+    color: #e0e0e0;
+    padding: 40px;
+    width: 1100px;
+  }
+  h1 {
+    font-size: 28px;
+    color: #f0c040;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #f0c040;
+    padding-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  h2 {
+    font-size: 20px;
+    color: #60b8ff;
+    margin: 30px 0 12px 0;
+    border-left: 4px solid #60b8ff;
+    padding-left: 10px;
+  }
+  h3 {
+    font-size: 15px;
+    color: #a0d8a0;
+    margin: 18px 0 8px 0;
+    padding: 4px 10px;
+    background: #1a2a1a;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 13px;
+    table-layout: fixed;
+  }
+  th.check-col, td.check-cell {
+    width: 36px;
+  }
+  th:nth-child(2), td:nth-child(2) {
+    width: 42%;
+  }
+  .machine-table th:nth-child(2), .machine-table td:nth-child(2) {
+    width: 30px; /* # column */
+  }
+  .machine-table th:nth-child(3), .machine-table td:nth-child(3) {
+    width: auto; /* Machine - takes remaining space */
+  }
+  .machine-table th:nth-child(4), .machine-table td:nth-child(4) {
+    width: 60px; /* Count */
+    text-align: center;
+  }
+  .machine-table th:nth-child(5), .machine-table td:nth-child(5) {
+    width: 260px; /* Notes */
+  }
+  th {
+    background: #1e2a3a;
+    color: #90c8ff;
+    padding: 8px 12px;
+    text-align: left;
+    border: 1px solid #2a3a4a;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  th.check-col {
+    width: 36px;
+    text-align: center;
+    padding: 8px 4px;
+  }
+  td {
+    padding: 7px 12px;
+    border: 1px solid #2a2a3a;
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+  td.check-cell {
+    width: 36px;
+    text-align: center;
+    padding: 4px;
+    vertical-align: middle;
+  }
+  tr:nth-child(even) td { background: #161a22; }
+  tr:nth-child(odd) td { background: #12151c; }
+
+  /* Checked row styling */
+  tr.row-done td {
+    opacity: 0.35;
+    text-decoration: line-through;
+    text-decoration-color: #555;
+  }
+  tr.row-done td.check-cell {
+    opacity: 1;
+    text-decoration: none;
+  }
+
+  /* Custom checkbox */
+  .cb-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #3a4a5a;
+    border-radius: 4px;
+    background: #0f1117;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  input[type="checkbox"]:hover {
+    border-color: #60b8ff;
+  }
+  input[type="checkbox"]:checked {
+    background: #2a8a4a;
+    border-color: #3ada6a;
+  }
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 6px;
+    height: 10px;
+    border: 2px solid #c0ffcc;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+
+  .warn { color: #ffaa44; font-weight: bold; }
+  .placeholder { color: #555; font-style: italic; }
+  .output-type {
+    font-size: 11px;
+    color: #888;
+    margin: 4px 0 10px 2px;
+    letter-spacing: 0.3px;
+  }
+  .output-type strong {
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-left: 4px;
+  }
+  .ot-item   { background: #1a2a3a; color: #60b8ff; }
+  .ot-fluid  { background: #1a2a3a; color: #80d8ff; }
+  .ot-both   { background: #2a1a3a; color: #c080ff; }
+  .ot-unknown { background: #222; color: #555; font-style: italic; }
+  .section-block {
+    background: #13161f;
+    border: 1px solid #2a2d3a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+  }
+  .legend {
+    margin-top: 30px;
+    font-size: 12px;
+    color: #aaa;
+    border-top: 1px solid #2a2a3a;
+    padding-top: 12px;
+  }
+  .num { color: #f0c040; font-weight: bold; }
+  .nav-link {
+    color: #e0e0e0;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .nav-link:hover {
+    color: #60b8ff;
+    text-decoration: underline;
+  }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    background: #1a1e28;
+    border: 1px solid #2a3a4a;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: #90c8ff;
+    white-space: nowrap;
+    min-width: 110px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 10px;
+    background: #1e2a3a;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2a8a4a, #3ada6a);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .progress-pct {
+    font-size: 13px;
+    color: #3ada6a;
+    font-weight: bold;
+    min-width: 52px;
+    text-align: right;
+  }
+  .reset-btn {
+    padding: 5px 14px;
+    background: #1e2a3a;
+    color: #ff8866;
+    border: 1px solid #ff8866;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .reset-btn:hover {
+    background: #ff8866;
+    color: #0f1117;
+  }
+  .toggle-btn {
+    padding: 5px 14px;
+    background: #1e2a3a;
+    color: #60b8ff;
+    border: 1px solid #60b8ff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .toggle-btn:hover {
+    background: #60b8ff;
+    color: #0f1117;
+  }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .fab-wrap {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 999;
+  }
+  .fab {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, color 0.15s, opacity 0.2s;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .fab-top {
+    background: #1a1e28;
+    color: #90c8ff;
+    border-color: #3a5a7a;
+  }
+  .fab-top:hover {
+    background: #60b8ff;
+    color: #0f1117;
+  }
+  .fab-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div style="margin-bottom: 24px;">
+  <div style="font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;">GregTech New Horizons</div>
+  <div style="font-size: 32px; font-weight: bold; color: #f0c040; letter-spacing: 2px;">Platline <span style="color: #3a4a5a;">·</span> <span style="color: #e0e0e0;">Level Maintained</span></div>
+  <div style="height: 2px; background: linear-gradient(90deg, #f0c040, #3a4a5a 60%, transparent); margin-top: 10px;"></div>
+</div>
+
+<!-- Progress Bars -->
+<div class="progress-bar-wrap">
+  <span class="progress-label">🔧 Machines</span>
+  <div class="progress-track">
+    <div class="progress-fill" id="machinesFill"></div>
+  </div>
+  <span class="progress-pct" id="machinesPct">0/11</span>
+</div>
+<div class="progress-bar-wrap">
+  <span class="progress-label">📋 Recipes</span>
+  <div class="progress-track">
+    <div class="progress-fill" id="recipesFill"></div>
+  </div>
+  <span class="progress-pct" id="recipesPct">0/57</span>
+</div>
+<div class="btn-row">
+  <button class="reset-btn" onclick="resetAll()">Reset All</button>
+  <button class="toggle-btn" id="toggleBtn" onclick="toggleDone()">Hide Checked</button>
+</div>
+
+<!-- Floating action buttons -->
+<div class="fab-wrap">
+  <button class="fab fab-top fab-hidden" id="backToTopBtn" onclick="scrollToTop()">↑ Back to Top</button>
+</div>
+
+<h1>🔧 Required Machines</h1>
+
+<div class="section-block">
+<table class="machine-table">
+  <tr><th class="check-col">✓</th><th>#</th><th>Machine</th><th>Count</th><th>Notes</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-1"></div></td><td class="num">1</td><td><strong><a class="nav-link" href="#ebf">Electric Blast Furnace (EBF)</a></strong></td><td>2</td><td>EBF 1 (Stocking) · EBF 2 (Dual)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-2"></div></td><td class="num">2</td><td><strong><a class="nav-link" href="#lcr">Large Chemical Reactor (LCR)</a></strong></td><td>3</td><td>LCR 1 · LCR 2 · LCR 3 (Dual)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-3"></div></td><td class="num">3</td><td><strong><a class="nav-link" href="#mixer">Mixer</a></strong></td><td>1</td><td>Dual Interface</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-4"></div></td><td class="num">4</td><td><strong><a class="nav-link" href="#distillation-tower">Distillation Tower</a></strong></td><td>1</td><td>Dual Interface</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-5"></div></td><td class="num">5</td><td><strong><a class="nav-link" href="#fluid-extractor">Fluid Extractor</a></strong></td><td>1</td><td>Dual Interface</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-6"></div></td><td class="num">6</td><td><strong><a class="nav-link" href="#fluid-solidifier">Fluid Solidifier</a></strong></td><td>1</td><td>Dual Interface</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-7"></div></td><td class="num">7</td><td><strong><a class="nav-link" href="#heater">Heater</a></strong></td><td>1</td><td>Dual Interface</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-8"></div></td><td class="num">8</td><td><strong><a class="nav-link" href="#centrifuge">Centrifuge</a></strong></td><td>1</td><td>Stocking Input Bus (ME)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-9"></div></td><td class="num">9</td><td><strong><a class="nav-link" href="#electrolyzer">Electrolyzer</a></strong></td><td>1</td><td>Stocking Input Bus (ME)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-10"></div></td><td class="num">10</td><td><strong><a class="nav-link" href="#sifter">Sifter</a></strong></td><td>1</td><td>Stocking Input Bus (ME)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="m-11"></div></td><td class="num">11</td><td><strong><a class="nav-link" href="#macerator">Macerator</a></strong></td><td>1</td><td>Stocking Input Bus (ME)</td></tr>
+</table>
+<div class="legend">Total: <strong>14 machines</strong> &nbsp;·&nbsp; 9 with Dual Interface &nbsp;·&nbsp; 5 with Stocking Input Bus (ME)</div>
+</div>
+
+<h1>📋 Machine Recipes</h1>
+
+<!-- EBF -->
+<h2 id="ebf">Electric Blast Furnace (EBF)</h2>
+
+<div class="section-block">
+<h3>EBF 1 - Stocking Input Bus (ME)</h3>
+<div class="output-type">Output Type: <strong class="ot-item">Item</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-ebf1-1"></div></td><td>Refined Platinum Salt Dust</td><td class="placeholder">— edit me —</td></tr>
+</table>
+
+<h3>EBF 2 - Circuit #1 #11 - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-both">Both</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-ebf2-1"></div></td><td>Rhodium Salt Dust</td><td>Crude Rhodium Metal Dust + Salt + Chlorine</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-ebf2-2"></div></td><td>Leach Residue Dust</td><td>Platinum Residue Dust + Molten Potassium Disulfate</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-ebf2-3"></div></td><td>Iridium Metal Residue Dust + Acidic Osmium Solution</td><td>Rarest Metal Residue Dust + Hydrochloric Acid</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-ebf2-4"></div></td><td>Rarest Metal Residue Dust</td><td>Leach Residue Dust + Saltpeter Dust + Salt Water</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-ebf2-5"></div></td><td>Iridium Dioxide Dust</td><td>Iridium Metal Residue Dust</td></tr>
+</table>
+</div>
+
+<!-- LCR -->
+<h2 id="lcr">Large Chemical Reactor (LCR)</h2>
+
+<div class="section-block">
+<h3>LCR 1 - Circuit #1 - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-both">Both</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-1"></div></td><td>Carbon Monoxide</td><td>Carbon Dust + Oxygen Dust</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-2"></div></td><td>Nitrogen Dioxide</td><td>Oxygen Gas + Nitric Oxide</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-3"></div></td><td>Nitric Oxide</td><td>Oxygen Gas + Ammonia</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-4"></div></td><td>Ammonia</td><td>Nitrogen Gas + Hydrogen Gas</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-5"></div></td><td>Palladium Enriched Ammonia</td><td>Palladium Metallic Powder Dust + Ammonia</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-6"></div></td><td>Rhodium Nitrate Dust</td><td>Sodium Nitrate Dust + Rhodium Salt Solution</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-7"></div></td><td>Ammonium Chloride</td><td>Hydrochloric Acid + Ammonia</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-8"></div></td><td>Formic Acid</td><td>Sulfuric Acid + Sodium Formate</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-9"></div></td><td>Hydrochloric Acid</td><td>Hydrogen Gas + Chlorine</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-10"></div></td><td>Sodium Hydroxide Dust</td><td>Sodium Dust + Water</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr1-11"></div></td><td>Potassium Disulfate Dust</td><td>Potassium Dust + Sulfur Dust + Oxygen Gas</td></tr>
+</table>
+
+<h3>LCR 2 - Circuit #3 #9 - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-both">Both</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr2-1"></div></td><td><span class="warn">⚠️</span> Reprecipitated Platinum Dust</td><td>Platinum Concentrate + Ammonium Chloride</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr2-2"></div></td><td><span class="warn">⚠️</span> Platinum Concentrate</td><td>Platinum Metallic Powder Dust + Aqua Regia</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr2-3"></div></td><td>Rhodium Sulfate Solution</td><td>Rhodium Sulfate + Water</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr2-4"></div></td><td>Reprecipitated Palladium Dust</td><td>Palladium Metallic Powder Dust + Palladium Enriched Ammonia</td></tr>
+</table>
+
+<h3>LCR 3 - Circuit #2 #24 - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-both">Both</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-1"></div></td><td>Nitric Acid</td><td>Nitrogen Dioxide + Oxygen Gas + Water</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-2"></div></td><td>Sulfuric Acid</td><td>Sulfur Dust + Oxygen Gas + Water</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-3"></div></td><td>Reprecipitated Rhodium Dust</td><td>Rhodium Filter Cake Solution</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-4"></div></td><td>Crude Rhodium Metal Dust</td><td>Zinc Dust + Rhodium Sulfate Solution</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-5"></div></td><td>Osmium Dust</td><td>Hydrochloric Acid + Osmium Solution</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-6"></div></td><td>Palladium Dust</td><td>Reprecipitated Palladium Dust + Formic Acid</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-7"></div></td><td>Sodium Formate</td><td>Sodium Hydroxide Dust + Carbon Monoxide</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-8"></div></td><td>Acidic Iridium Solution</td><td>Iridium Dioxide Dust + Hydrochloric Acid</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-9"></div></td><td>Ruthenium Dust</td><td>Ruthenium Tetroxide Dust + Hydrochloric Acid</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-10"></div></td><td>Platinum Dust</td><td>Reprecipitated Platinum Dust + Calcium Dust</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-11"></div></td><td>Iridium Chloride Dust</td><td>Ammonium Chloride + Acidic Iridium Solution</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-12"></div></td><td>Iridium Dust</td><td>Iridium Chloride Dust + Calcium Dust</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-13"></div></td><td>Rhodium Dust</td><td>Reprecipitated Rhodium Dust + Hydrochloric Acid</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-14"></div></td><td>Ruthenium Tetroxide Solution</td><td>Sodium Ruthenate Dust + Chlorine</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-lcr3-15"></div></td><td>Sodium Nitrate Dust</td><td>Sodium Dust + Nitric Acid</td></tr>
+</table>
+</div>
+
+<!-- Distillation Tower -->
+<h2 id="distillation-tower">Distillation Tower</h2>
+<div class="section-block">
+<h3>Distillation Tower - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-fluid">Fluid</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-dt-1"></div></td><td>Ruthenium Tetroxide</td><td>Hot Ruthenium Tetroxide Solution</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-dt-2"></div></td><td>Osmium Solution</td><td>Acidic Osmium Solution</td></tr>
+</table>
+</div>
+
+<!-- Centrifuge -->
+<h2 id="centrifuge">Centrifuge</h2>
+<div class="section-block">
+<h3>Centrifuge - Stocking Input Bus (ME)</h3>
+<div class="output-type">Output Type: <strong class="ot-item">Item</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-cent-1"></div></td><td>Sludge Dust Residue Dust</td><td class="placeholder">— edit me —</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-cent-2"></div></td><td>Metallic Sludge Dust Residue Dust</td><td class="placeholder">— edit me —</td></tr>
+</table>
+</div>
+
+<!-- Electrolyzer -->
+<h2 id="electrolyzer">Electrolyzer</h2>
+<div class="section-block">
+<h3>Electrolyzer - Stocking Input Bus (ME)</h3>
+<div class="output-type">Output Type: <strong class="ot-unknown">— edit me —</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-elec-1"></div></td><td>Sodium Sulfate Dust</td><td class="placeholder">— edit me —</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-elec-2"></div></td><td>Zinc Sulfate Dust</td><td class="placeholder">— edit me —</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-elec-3"></div></td><td>Calcium Chloride Dust</td><td class="placeholder">— edit me —</td></tr>
+</table>
+</div>
+
+<!-- Fluid Extractor -->
+<h2 id="fluid-extractor">Fluid Extractor</h2>
+<div class="section-block">
+<h3>Fluid Extractor - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-fluid">Fluid</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-fe-1"></div></td><td>Molten Potassium Disulfate</td><td>Potassium Disulfate Dust</td></tr>
+</table>
+</div>
+
+<!-- Fluid Solidifier -->
+<h2 id="fluid-solidifier">Fluid Solidifier</h2>
+<div class="section-block">
+<h3>Fluid Solidifier - Circuit #1 - Dual Interface - Mold: Ball &amp; Ingot</h3>
+<div class="output-type">Output Type: <strong class="ot-item">Item</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-fs-1"></div></td><td>Potassium Ingot</td><td>Molten Potassium (Ingot Mold)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-fs-2"></div></td><td>Calcium Chloride Dust</td><td>Calcium Chloride (C1)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-fs-3"></div></td><td>Sodium Dust</td><td>Liquid Sodium (Ball Mold)</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-fs-4"></div></td><td>Ruthenium Tetroxide Dust</td><td>Ruthenium Tetroxide (C1)</td></tr>
+</table>
+</div>
+
+<!-- Heater -->
+<h2 id="heater">Heater</h2>
+<div class="section-block">
+<h3>Heater - Circuit #1 - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-fluid">Fluid</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-heat-1"></div></td><td>Hot Ruthenium Tetroxide Solution</td><td>Ruthenium Tetroxide Solution</td></tr>
+</table>
+</div>
+
+<!-- Mixer -->
+<h2 id="mixer">Mixer</h2>
+<div class="section-block">
+<h3>Mixer - Circuit #1 #3 - Dual Interface</h3>
+<div class="output-type">Output Type: <strong class="ot-fluid">Fluid</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-mix-1"></div></td><td><span class="warn">⚠️</span> Aqua Regia</td><td>Nitric Acid + Hydrochloric Acid</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-mix-2"></div></td><td>Rhodium Salt Solution</td><td>Rhodium Salt Dust + Water</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-mix-3"></div></td><td>Rhodium Filter Cake Solution</td><td>Rhodium Filter Cake Dust + Water</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-mix-4"></div></td><td>Salt Water</td><td>Salt + Water</td></tr>
+</table>
+</div>
+
+<!-- Macerator -->
+<h2 id="macerator">Macerator</h2>
+<div class="section-block">
+<h3>Macerator - Stocking Input Bus (ME)</h3>
+<div class="output-type">Output Type: <strong class="ot-item">Item</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-mac-1"></div></td><td>Potassium Dust</td><td>Potassium Ingot</td></tr>
+</table>
+</div>
+
+<!-- Sifter -->
+<h2 id="sifter">Sifter</h2>
+<div class="section-block">
+<h3>Sifter - Stocking Input Bus (ME)</h3>
+<div class="output-type">Output Type: <strong class="ot-item">Item</strong></div>
+<table>
+  <tr><th class="check-col">✓</th><th>Output</th><th>Inputs</th></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-sift-1"></div></td><td>Platinum Salt Dust</td><td class="placeholder">— edit me —</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-sift-2"></div></td><td>Palladium Salt Dust</td><td class="placeholder">— edit me —</td></tr>
+  <tr><td class="check-cell"><div class="cb-wrap"><input type="checkbox" data-id="r-sift-3"></div></td><td>Rhodium Nitrate Dust</td><td class="placeholder">— edit me —</td></tr>
+</table>
+</div>
+
+<div class="legend">⚠️ = Pattern/ratio has been changed — verify before use &nbsp;·&nbsp; Checkboxes are saved locally in your browser.</div>
+
+<script>
+  const STORAGE_KEY = 'platline_checks';
+
+  function getState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch { return {}; }
+  }
+
+  function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let hidingDone = false;
+
+  function updateRow(cb) {
+    const row = cb.closest('tr');
+    if (row) {
+      row.classList.toggle('row-done', cb.checked);
+      if (hidingDone && cb.checked) row.style.display = 'none';
+      if (!cb.checked) row.style.display = '';
+    }
+  }
+
+  function updateProgress() {
+    const allMachines = document.querySelectorAll('input[type="checkbox"][data-id^="m-"]');
+    const checkedMachines = document.querySelectorAll('input[type="checkbox"][data-id^="m-"]:checked');
+    const allRecipes = document.querySelectorAll('input[type="checkbox"][data-id^="r-"]');
+    const checkedRecipes = document.querySelectorAll('input[type="checkbox"][data-id^="r-"]:checked');
+
+    const mPct = allMachines.length ? Math.round((checkedMachines.length / allMachines.length) * 100) : 0;
+    const rPct = allRecipes.length ? Math.round((checkedRecipes.length / allRecipes.length) * 100) : 0;
+
+    document.getElementById('machinesFill').style.width = mPct + '%';
+    document.getElementById('machinesPct').textContent = checkedMachines.length + '/' + allMachines.length;
+    document.getElementById('recipesFill').style.width = rPct + '%';
+    document.getElementById('recipesPct').textContent = checkedRecipes.length + '/' + allRecipes.length;
+  }
+
+  function toggleDone() {
+    hidingDone = !hidingDone;
+    document.getElementById('toggleBtn').textContent = hidingDone ? 'Show Checked' : 'Hide Checked';
+    document.querySelectorAll('tr.row-done').forEach(row => {
+      row.style.display = hidingDone ? 'none' : '';
+    });
+  }
+
+  function resetAll() {
+    if (!confirm('Reset all checkmarks? This cannot be undone.')) return;
+    saveState({});
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      updateRow(cb);
+    });
+    document.querySelectorAll('tr').forEach(row => row.style.display = '');
+    hidingDone = false;
+    document.getElementById('toggleBtn').textContent = 'Hide Checked';
+    updateProgress();
+  }
+
+  // Init: load saved state
+  const state = getState();
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    const id = cb.dataset.id;
+    if (state[id]) {
+      cb.checked = true;
+      updateRow(cb);
+    }
+    cb.addEventListener('change', () => {
+      const s = getState();
+      if (cb.checked) s[cb.dataset.id] = true;
+      else delete s[cb.dataset.id];
+      saveState(s);
+      updateRow(cb);
+      updateProgress();
+    });
+  });
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  window.addEventListener('scroll', () => {
+    const btn = document.getElementById('backToTopBtn');
+    if (window.scrollY > 300) {
+      btn.classList.remove('fab-hidden');
+    } else {
+      btn.classList.add('fab-hidden');
+    }
+  });
+
+  updateProgress();
+</script>
+</body>
+</html>
